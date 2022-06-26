@@ -4,6 +4,7 @@ email = "calbaker@gmail.com"
 name = "tmux_helper"
 version = "0.1.0"
 edition = "2021"
+about = "Wrapper for tmux with simpler interface."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
