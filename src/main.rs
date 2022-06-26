@@ -1,37 +1,53 @@
-use clap::{Arg, App};
-use std::process::Command;
+use clap::{Arg, Command};
+use std::process::Command as ProcCommand;
 
 fn main() {
-    let matches = App::new("A simple wrapper for tmux.")
+    let matches = Command::new("A simple wrapper for tmux.")
         .version("0.0.1")
         .author("Chad Baker <calbaker@gmail.com>")
         // .about("Teaches argument parsing")
-        .arg(Arg::with_name("new")
-                 .short('n')
-                 .long("new")
-                 .takes_value(true)
-                 .help("Create new session with provided name."))
-        .arg(Arg::with_name("attach")
-                 .short('a')
-                 .long("attach")
-                 .takes_value(true)
-                 .help("Attach to session with provided name."))
+        .arg(
+            Arg::with_name("new")
+                .short('n')
+                .long("new")
+                .takes_value(true)
+                .exclusive(true)
+                .help("Create new session with provided name."),
+        )
+        .arg(
+            Arg::with_name("attach")
+                .short('a')
+                .long("attach")
+                .takes_value(true)
+                .exclusive(true)
+                .help("Attach to session with provided name."),
+        )
+        .arg(
+            Arg::with_name("kill")
+                .short('k')
+                .long("kill")
+                .takes_value(true)
+                .exclusive(true)
+                .help("Kill session with provided name."),
+        )
         .get_matches();
 
-    match matches.value_of("new") {
-        Some(session_name) => {
-            Command::new("tmux").args(&["new", "-s", session_name] ).status().unwrap();
-            assert!(matches.value_of("attach").is_none())
-        }
-        None => {
-            match matches.value_of("attach") {
-                Some(session_name) => {
-                    Command::new("tmux").args(&["a", "-t", session_name] ).status().unwrap();
-                }
-                None => {
-                    panic!("Must provide either `-a` or `-n` followed by session name.")
-                }
-            }
-        }
-    }
+    matches.value_of("new").map(|session_name| {
+        ProcCommand::new("/usr/bin/tmux")
+            .args(&["new", "-s", session_name])
+            .status()
+            .unwrap()
+    });
+    matches.value_of("attach").map(|session_name| {
+        ProcCommand::new("/usr/bin/tmux")
+            .args(&["a", "-t", session_name])
+            .status()
+            .unwrap()
+    });
+    matches.value_of("kill").map(|session_name| {
+        ProcCommand::new("/usr/bin/tmux")
+            .args(&["kill-session", "-t", session_name])
+            .status()
+            .unwrap()
+    });
 }
