@@ -1,4 +1,6 @@
 [package]
+authors = ["Chad Baker <calbaker@gmail.com>"]
+email = "calbaker@gmail.com"
 name = "tmux_helper"
 version = "0.1.0"
 edition = "2021"

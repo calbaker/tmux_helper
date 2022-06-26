@@ -1,67 +1,50 @@
-use clap::{Arg, Command};
+use clap::Parser;
 use std::process::Command as ProcCommand;
 
-fn main() {
-    let matches = Command::new("A simple wrapper for tmux.")
-        .version("0.0.1")
-        .author("Chad Baker <calbaker@gmail.com>")
-        // .about("Teaches argument parsing")
-        .arg(
-            Arg::with_name("new")
-                .short('n')
-                .long("new")
-                .takes_value(true)
-                .exclusive(true)
-                .help("Create new session with provided name."),
-        )
-        .arg(
-            Arg::with_name("attach")
-                .short('a')
-                .long("attach")
-                .takes_value(true)
-                .exclusive(true)
-                .help("Attach to session with provided name."),
-        )
-        .arg(
-            Arg::with_name("kill")
-                .short('k')
-                .long("kill")
-                .takes_value(true)
-                .exclusive(true)
-                .help("Kill session with provided name."),
-        )
-        .arg(
-            Arg::with_name("list")
-                .short('l')
-                .long("list")
-                .takes_value(true)
-                .exclusive(true)
-                .help("List all sessions."),
-        )
-        .get_matches();
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+/// Wrapper for tmux with simpler interface.
+/// Use `<Ctrl>+b d` to disconnect from a session.  The session will remain active.  
+struct Tmux {
+    #[clap(short, long, value_parser, exclusive = true)]
+    /// Create new session with provided name.
+    new: Option<String>,
+    #[clap(short, long, value_parser, exclusive = true)]
+    /// Attach to session with provided name.
+    attach: Option<String>,
+    /// Kill session with provided name.
+    #[clap(short, long, value_parser, exclusive = true)]
+    kill: Option<String>,
+    /// List all sessions.
+    #[clap(short, long, exclusive = true)]
+    list: bool,
+}
 
-    matches.value_of("new").map(|session_name| {
+fn main() {
+    let tmux = Tmux::parse();
+
+    tmux.new.map(|session_name| {
         ProcCommand::new("/usr/bin/tmux")
-            .args(&["new", "-s", session_name])
+            .args(&["new", "-s", &session_name])
             .status()
             .unwrap()
     });
-    matches.value_of("attach").map(|session_name| {
+    tmux.attach.map(|session_name| {
         ProcCommand::new("/usr/bin/tmux")
-            .args(&["a", "-t", session_name])
+            .args(&["a", "-t", &session_name])
             .status()
             .unwrap()
     });
-    matches.value_of("kill").map(|session_name| {
+    tmux.kill.map(|session_name| {
         ProcCommand::new("/usr/bin/tmux")
-            .args(&["kill-session", "-t", session_name])
+            .args(&["kill-session", "-t", &session_name])
             .status()
             .unwrap()
     });
-    matches.value_of("list").map(|session_name| {
+    if tmux.list {
         ProcCommand::new("/usr/bin/tmux")
-            .args(&["kill-session", "-t", session_name])
+            .args(&["list-sessions"])
             .status()
-            .unwrap()
-    });
+            .unwrap();
+    };
 }
