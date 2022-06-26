@@ -4,7 +4,9 @@ use std::process::Command as ProcCommand;
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 /// Wrapper for tmux with simpler interface.
-/// Use `<Ctrl>+b d` to disconnect from a session.  The session will remain active.  
+/// Use `<Ctrl>+b d` to disconnect from a session.  The session will remain active.   
+/// Add to path by running the following or putting in .bashrc:   
+/// `export PATH=/path/to/tmux_helper/folder:$PATH`
 struct Tmux {
     #[clap(short, long, value_parser, exclusive = true)]
     /// Create new session with provided name.
