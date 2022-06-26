@@ -30,6 +30,14 @@ fn main() {
                 .exclusive(true)
                 .help("Kill session with provided name."),
         )
+        .arg(
+            Arg::with_name("list")
+                .short('l')
+                .long("list")
+                .takes_value(true)
+                .exclusive(true)
+                .help("List all sessions."),
+        )
         .get_matches();
 
     matches.value_of("new").map(|session_name| {
@@ -45,6 +53,12 @@ fn main() {
             .unwrap()
     });
     matches.value_of("kill").map(|session_name| {
+        ProcCommand::new("/usr/bin/tmux")
+            .args(&["kill-session", "-t", session_name])
+            .status()
+            .unwrap()
+    });
+    matches.value_of("list").map(|session_name| {
         ProcCommand::new("/usr/bin/tmux")
             .args(&["kill-session", "-t", session_name])
             .status()
