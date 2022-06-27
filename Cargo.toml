@@ -10,3 +10,4 @@ about = "Wrapper for tmux with simpler interface."
 
 [dependencies]
 clap = { version = "3.2.6", features = ["derive"] }
+clap_complete_command = "0.3.4"

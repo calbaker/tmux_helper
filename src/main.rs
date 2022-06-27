@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{IntoApp, Parser, Subcommand};
 use std::process::Command as ProcCommand;
 
 #[derive(Parser)]
@@ -13,55 +13,65 @@ struct TmuxArgs {
     command: SubCommands,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Subcommand)]
 enum SubCommands {
     /// Create new session with provided name.
-    N {
+    New {
         #[clap(value_parser)]
         session: String,
     },
     /// Attach to session with provided name.
-    A {
+    Attach {
         #[clap(value_parser)]
         session: String,
     },
     /// Kill session with provided name.
-    K {
+    Kill {
         #[clap(value_parser)]
         session: String,
     },
     /// List all sessions.
     #[clap(value_parser)]
-    L,
+    List,
+    /// Generate shell completions to put in ~/.bash_completion
+    Completions {
+        /// The shell to generate the completions for
+        #[clap(arg_enum)]
+        shell: clap_complete_command::Shell,
+    },
 }
 
 fn main() {
     let tmux_args = TmuxArgs::parse();
 
     match tmux_args.command {
-        SubCommands::N { session } => {
+        SubCommands::New { session } => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["new", "-s", &session])
                 .status()
                 .unwrap();
         }
-        SubCommands::A { session } => {
+        SubCommands::Attach { session } => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["a", "-t", &session])
                 .status()
                 .unwrap();
         }
-        SubCommands::K { session } => {
+        SubCommands::Kill { session } => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["kill-session", "-t", &session])
                 .status()
                 .unwrap();
         }
-        SubCommands::L => {
+        SubCommands::List => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["list-sessions"])
                 .status()
                 .unwrap();
+        }
+        // e.g. `$ cli completions bash`
+        SubCommands::Completions { shell } => {
+            shell.generate(&mut TmuxArgs::command(), &mut std::io::stdout());
         }
     }
 }
