@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use std::process::Command as ProcCommand;
 
 #[derive(Parser)]
@@ -6,47 +6,62 @@ use std::process::Command as ProcCommand;
 /// Wrapper for tmux with simpler interface.
 /// Use `<Ctrl>+b d` to disconnect from a session.  The session will remain active.   
 /// Add to path by running the following or putting in .bashrc:   
-/// `export PATH="/path/to/tmux_helper/folder":$PATH`
-struct Tmux {
-    #[clap(short, long, value_parser, exclusive = true)]
+/// `export PATH="/path/to/tmux_helper/folder":$PATH`.  You could put the file in
+/// ~/.local/local/tmux_helper, for example.  
+struct TmuxArgs {
+    #[clap(subcommand)]
+    command: SubCommands,
+}
+
+#[derive(Debug, Subcommand)]
+enum SubCommands {
     /// Create new session with provided name.
-    new: Option<String>,
-    #[clap(short, long, value_parser, exclusive = true)]
+    New {
+        #[clap(value_parser)]
+        session: String,
+    },
     /// Attach to session with provided name.
-    attach: Option<String>,
+    Attach {
+        #[clap(value_parser)]
+        session: String,
+    },
     /// Kill session with provided name.
-    #[clap(short, long, value_parser, exclusive = true)]
-    kill: Option<String>,
+    Kill {
+        #[clap(value_parser)]
+        session: String,
+    },
     /// List all sessions.
-    #[clap(short, long, exclusive = true)]
-    list: bool,
+    #[clap(value_parser)]
+    List,
 }
 
 fn main() {
-    let tmux = Tmux::parse();
+    let tmux_args = TmuxArgs::parse();
 
-    tmux.new.map(|session_name| {
-        ProcCommand::new("/usr/bin/tmux")
-            .args(&["new", "-s", &session_name])
-            .status()
-            .unwrap()
-    });
-    tmux.attach.map(|session_name| {
-        ProcCommand::new("/usr/bin/tmux")
-            .args(&["a", "-t", &session_name])
-            .status()
-            .unwrap()
-    });
-    tmux.kill.map(|session_name| {
-        ProcCommand::new("/usr/bin/tmux")
-            .args(&["kill-session", "-t", &session_name])
-            .status()
-            .unwrap()
-    });
-    if tmux.list {
-        ProcCommand::new("/usr/bin/tmux")
-            .args(&["list-sessions"])
-            .status()
-            .unwrap();
-    };
+    match tmux_args.command {
+        SubCommands::New { session } => {
+            ProcCommand::new("/usr/bin/tmux")
+                .args(&["new", "-s", &session])
+                .status()
+                .unwrap();
+        }
+        SubCommands::Attach { session } => {
+            ProcCommand::new("/usr/bin/tmux")
+                .args(&["a", "-t", &session])
+                .status()
+                .unwrap();
+        }
+        SubCommands::Kill { session } => {
+            ProcCommand::new("/usr/bin/tmux")
+                .args(&["kill-session", "-t", &session])
+                .status()
+                .unwrap();
+        }
+        SubCommands::List => {
+            ProcCommand::new("/usr/bin/tmux")
+                .args(&["list-sessions"])
+                .status()
+                .unwrap();
+        }
+    }
 }
