@@ -16,48 +16,48 @@ struct TmuxArgs {
 #[derive(Debug, Subcommand)]
 enum SubCommands {
     /// Create new session with provided name.
-    New {
+    N {
         #[clap(value_parser)]
         session: String,
     },
     /// Attach to session with provided name.
-    Attach {
+    A {
         #[clap(value_parser)]
         session: String,
     },
     /// Kill session with provided name.
-    Kill {
+    K {
         #[clap(value_parser)]
         session: String,
     },
     /// List all sessions.
     #[clap(value_parser)]
-    List,
+    L,
 }
 
 fn main() {
     let tmux_args = TmuxArgs::parse();
 
     match tmux_args.command {
-        SubCommands::New { session } => {
+        SubCommands::N { session } => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["new", "-s", &session])
                 .status()
                 .unwrap();
         }
-        SubCommands::Attach { session } => {
+        SubCommands::A { session } => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["a", "-t", &session])
                 .status()
                 .unwrap();
         }
-        SubCommands::Kill { session } => {
+        SubCommands::K { session } => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["kill-session", "-t", &session])
                 .status()
                 .unwrap();
         }
-        SubCommands::List => {
+        SubCommands::L => {
             ProcCommand::new("/usr/bin/tmux")
                 .args(&["list-sessions"])
                 .status()
